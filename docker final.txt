@@ -64,7 +64,8 @@ Java Applicaton Multi-Stage Docker
 	COPY --from=build /target/demo-0.0.1-SNAPSHOT.jar /app/demo-0.0.1-SNAPSHOT.jar 
 	EXPOSE 8080
 	USER 1002
-	ENTRYPOINT Exectuion command is java -jar 
+	ENTRYPOINT java -jar /app/demo-0.0.1-SNAPSHOT.jar
+	
 
 8)Build Docker 
   	docker build -t name .
@@ -76,10 +77,14 @@ Java Applicaton Multi-Stage Docker
 	4. cd .aws
 	5. nano credentials 
 
-10)Create ECR Repository
+10)Create ECR Repository (მასტერზე)
 	1. aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 
 	2. docker tag
 	3. docker push
+
+	worker-1 worker-2ში
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 
+	docker pull image URI
 
 11)(step 5) Test Docker Swarm Installation
 	sudo docker service create --name web-server --publish 80:8080 (image 	URI)
