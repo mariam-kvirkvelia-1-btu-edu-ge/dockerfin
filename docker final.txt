@@ -39,7 +39,7 @@ DOCKER SWARM
 	მაგ.:sudo docker swarm join --token .....
 
 
-6)Clone repository
+6)Clone repository (მასტერზე ვუშვებთ)
 	git clone https://github.com/Ttsartsidze/Java-Hello-World
 
 7)Create Dockerfile
