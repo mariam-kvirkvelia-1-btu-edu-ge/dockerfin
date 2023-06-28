@@ -82,7 +82,7 @@ Java Applicaton Multi-Stage Docker
 	3. docker push
 
 11)(step 5) Test Docker Swarm Installation
-	sudo docker service create --name web-server --publish 8080:80 (image 	URI)
+	sudo docker service create --name web-server --publish 80:8080 (image 	URI)
 
 11)Create replicas of the service
 	sudo docker service scale web-server=4
