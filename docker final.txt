@@ -1,0 +1,96 @@
+
+DOCKER SWARM
+
+1) Create 3 Ubuntu instances with following resources: 
+	1) Instance type: t2.small
+	2) Number of instance: 3
+	3) Name of the instances: Docker-Master, Docker-Worker-1, Docker-Worker-2
+
+2)Configure the Cluster hosts file 0
+	sudo nano /etc/hosts (სამივეში 'master,worker-1,worker-2'უნდა ჩავწეროთ)
+	
+	master #master IP
+	worker-1 #worker-1 IP
+	worker-2 #worker-2 IP
+
+3)Install Docker CE on all the nodes (სამივეში)
+	1. sudo apt update
+	2. sudo apt install apt-transport-https ca-certificates curl
+	   software-properties-common -y
+	3.  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg |
+ 	      sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
+	4.  sudo add-apt-repository "deb [arch=amd64]
+	      https://download.docker.com/linux/ubuntu $(lsb_release -cs)
+	      stable"
+	5.  sudo apt update
+	6.  sudo apt install docker-ce -y
+	7.  sudo usermod -aG docker ${USER}
+	8.  newgrp docker
+
+4)Verify Docker is running on all the nodes  (სამივეში)
+	1. sudo systemctl status docker
+	2. sudo systemctl enable docker
+
+5)Create Docker Swarm Cluster (მასტერზე ვუშვებთ)
+	sudo docker swarm init --advertise-addr #master IP
+	მასტერზე პორტის გახსნა
+
+	worker-1 და worker-2ში უნდა დავაჯოინოთ (მასტერზე რასაც დაგვიბრუნებს მაგას ვაკოპირებთ)
+	მაგ.:sudo docker swarm join --token .....
+
+
+6)Clone repository
+	git clone https://github.com/Ttsartsidze/Java-Hello-World
+
+7)Create Dockerfile
+Java Applicaton Multi-Stage Docker 
+    First Stage:            
+	1) Service version is maven:3.8.3-openjdk-17
+	2) Copy all files from host to docker
+	3) Build this project with mvn clean package -Dmaven.test.skip=true 	(As a result of the build, we will have a jar file named: demo-0.0.1-	SNAPSHOT.jar) Location: /target/demo-0.0.1-SNAPSHOT.jar
+    Second Stage: 
+ 	1) Service version is maven:3.8.3-openjdk-17
+	2) Copy jar file from build  to /app/demo-0.0.1-SNAPSHOT.jar
+	3) Expose this image on 8080 port
+	4) Run with non root user for example: 1002
+	5) Exectuion command is java -jar  with ENTRYPOINT
+
+	nano Dockerfile
+	FROM maven:3.8.3-openjdk-17 as build
+	COPY . .
+	RUN mvn clean package -Dmaven.test.skip=true 
+
+	FROM maven:3.8.3-openjdk-17
+	COPY --from=build /target/demo-0.0.1-SNAPSHOT.jar /app/demo-0.0.1-SNAPSHOT.jar 
+	EXPOSE 8080
+	USER 1002
+	ENTRYPOINT Exectuion command is java -jar 
+
+8)Build Docker 
+  	docker build -t name .
+
+9)Install Aws-cli (სამივეში)
+	1. sudo apt install awscli
+	2. aws configure
+	3. cd ..
+	4. cd .aws
+	5. nano credentials 
+
+10)Create ECR Repository
+	1. aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 
+	2. docker tag
+	3. docker push
+
+11)(step 5) Test Docker Swarm Installation
+	sudo docker service create --name web-server --publish 8080:80 (image 	URI)
+
+11)Create replicas of the service
+	sudo docker service scale web-server=4
+
+
+
+
+
+
+
+

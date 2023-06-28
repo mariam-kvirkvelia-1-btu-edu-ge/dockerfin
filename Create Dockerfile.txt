@@ -1,0 +1,112 @@
+Create Dockerfile  with following options: 
+
+1) Java Applicaton Multi-Stage Docker 
+    First Stage:            
+	1) Service version is maven:3.8.3-openjdk-17
+	2) Copy all files from host to docker
+	3) Build this project with mvn clean package -Dmaven.test.skip=true 	(As a result of the build, we will have a jar file named: demo-0.0.1-	SNAPSHOT.jar) Location: /target/demo-0.0.1-SNAPSHOT.jar
+    Second Stage: 
+ 	1) Service version is maven:3.8.3-openjdk-17
+	2) Copy jar file from build  to /app/demo-0.0.1-SNAPSHOT.jar
+	3) Expose this image on 8080 port
+	4) Run with non root user for example: 1002
+	5) Exectuion command is java -jar  with ENTRYPOINT
+
+
+nano Dockerfile
+
+	FROM maven:3.8.3-openjdk-17 as build
+	COPY . .
+	RUN mvn clean package -Dmaven.test.skip=true 
+
+	FROM maven:3.8.3-openjdk-17
+	COPY --from=build /target/demo-0.0.1-SNAPSHOT.jar /app/demo-0.0.1-SNAPSHOT.jar 
+	EXPOSE 8080
+	USER 1002
+	ENTRYPOINT java -jar /app/demo-0.0.1-SNAPSHOT.jar
+
+2) Java Applicaton Multi-Stage Docker
+  First Stage:            
+	1) Service version is maven:3.8.5-openjdk-11 AS maven_build
+	2) Copy pom.xml  to /tmp/
+	3) Copy src to /tmp/src/
+	4) Make workdir /tmp/
+	5) Build this project with mvn clean package (As a result of the build, we will have a jar file named: hello-world-0.1.0.jar) Location: /tmp/target/hello-world-0.1.0.jar
+   Second Stage: 
+	1) Service version is eclipse-temurin:11
+	2) Make MAINTAINER UserName 
+	3) Expose this image on 8080 port
+	2) Copy jar file from build  to /data/hello-world-0.1.0.jar
+	4) Run with non root user for example: 1002
+	5) Exectuion command is java -jar    /data/hello-world-0.1.0.jar  with CMD
+
+
+
+nano Dockerfile
+
+	FROM maven:3.8.5-openjdk-11 AS maven_build
+	COPY pom.xml /tmp/
+	COPY src /tmp/src/
+
+	WORKDIR /tmp/
+	RUN mvn clean package
+
+	FROM eclipse-temurin:11
+
+	MAINTAINER ttsartsidze@gmail.com
+	EXPOSE 8080
+	COPY --from=maven_build /tmp/target/hello-world-0.1.0.jar /data/hello-world-0.1.0.jar
+	USER 1002
+	CMD java -jar /data/hello-world-0.1.0.jar
+
+
+3.Create Dockerfile  with following options: 
+ Frontend Applicaton
+     First Stage:   
+	1) Service version is node:14-alpine as build
+	2) Working directory is  /app
+	3) With environment   PATH /app/node_modules/.bin:$PATH (in path environment is ENV) 
+	4) You need package*.json files in docker image to be able to run the commandDd
+	5) Build this project with npm install
+	6) Copy all files from host to docker on working directory
+	7) Run command npm run build
+     Second Stage:
+	1) Nginx image nginx:1.13.12-alpine
+	2) Copy from build from ->  /app/build  to /usr/share/nginx/html
+	3) Copy ./nginx.conf  to  /etc/nginx/conf.d/default.conf
+
+nano Dockerfile 
+
+FROM node:14-alpine as build
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM nginx:1.13.12-alpine
+COPY --from=build /app/build /usr/share/nginx/html
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+
+
+4. Create docker-compose.yml 
+
+	1. version: '2.3'
+	2. services - angular
+	3. container_name: angular-compose
+	4. image: ECR image link
+	5. ports - 80:80
+
+
+nano docker-compose.yml
+
+version: '2.3'
+services:
+  angular:
+   container_name: angular-compose
+   image: 633836110417.dkr.ecr.us-east-1.amazonaws.com/angular-quiz3:latest
+   ports:
+    - '80:80'
+
+
